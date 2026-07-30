@@ -31,7 +31,7 @@ class Lead(Base):
     status = Column(String(20), default="new")  # new, contacted, qualified, converted, lost
     
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)

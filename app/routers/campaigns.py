@@ -84,7 +84,7 @@ async def launch_campaign(
         
     except Exception as e:
         logger.error(f"Failed to launch campaign: {e}")
-        raise HTTPException(status_code=500, detail(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{campaign_id}")
@@ -115,7 +115,7 @@ async def get_campaign(
         
     except Exception as e:
         logger.error(f"Failed to get campaign: {e}")
-        raise HTTPException(status_code=500, detail(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/")
@@ -164,4 +164,4 @@ async def list_campaigns(
         
     except Exception as e:
         logger.error(f"Failed to list campaigns: {e}")
-        raise HTTPException(status_code=500, detail(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
