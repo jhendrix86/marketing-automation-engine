@@ -36,11 +36,12 @@ class Settings(BaseSettings):
     # Integration
     funnel_automation_url: str = os.getenv("FUNNEL_AUTOMATION_URL", "http://localhost:8000")
     content_engine_url: str = os.getenv("CONTENT_ENGINE_URL", "http://localhost:8040")
-    analytics_engine_url: str = os.getenv("ANALYTICS_ENGINE_URL", "http://localhost:8041")
+    analytics_engine_url: str = os.getenv("ANALYTICS_ENGINE_URL", "http://localhost:8042")
     
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # tolerate env vars owned by other libs (e.g. unkey-auth's UNKEY_*)
 
 
 settings = Settings()
