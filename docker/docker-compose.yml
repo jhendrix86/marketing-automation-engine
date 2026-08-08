@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  marketing-automation-engine:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: marketing-automation-engine
+    ports:
+      - "8039:8039"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/marketing
+      - REDIS_URL=redis://redis:6379
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - DEFAULT_SENDER_EMAIL=${DEFAULT_SENDER_EMAIL:-marketing@company.com}
+      - TWITTER_API_KEY=${TWITTER_API_KEY}
+      - TWITTER_API_SECRET=${TWITTER_API_SECRET}
+      - TWITTER_ACCESS_TOKEN=${TWITTER_ACCESS_TOKEN}
+      - TWITTER_ACCESS_SECRET=${TWITTER_ACCESS_SECRET}
+      - LINKEDIN_API_KEY=${LINKEDIN_API_KEY}
+      - LINKEDIN_API_SECRET=${LINKEDIN_API_SECRET}
+      - DEBUG=${DEBUG:-false}
+      - FUNNEL_AUTOMATION_URL=http://funnel-automation-engine:8000
+      - CONTENT_ENGINE_URL=http://content-engine:8040
+      - ANALYTICS_ENGINE_URL=http://analytics-engine:8041
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - marketing-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: marketing-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=marketing
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - marketing-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: marketing-redis
+    networks:
+      - marketing-network
+    restart: unless-stopped
+
+networks:
+  marketing-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
