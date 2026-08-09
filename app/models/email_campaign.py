@@ -45,9 +45,39 @@ class EmailCampaign(Base):
     
     # Relationships
     campaign = relationship("Campaign")
-    
+    variants = relationship("EmailCampaignVariant", back_populates="email_campaign", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<EmailCampaign {self.id} - {self.subject}>"
+
+
+class EmailCampaignVariant(Base):
+    """
+    A/B test variant for an email campaign. When an EmailCampaign has 2+
+    variants, recipients are deterministically split between them
+    (ab_testing.assign_variant) rather than everyone getting the campaign's
+    top-level subject/html_content.
+    """
+    __tablename__ = "email_campaign_variants"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email_campaign_id = Column(UUID(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
+
+    name = Column(String(50), nullable=False)  # e.g. "a", "b"
+    subject = Column(String(500), nullable=False)
+    html_content = Column(Text, nullable=True)
+
+    # Real, measured outcomes for this variant
+    sent = Column(Integer, default=0)
+    delivered = Column(Integer, default=0)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    email_campaign = relationship("EmailCampaign", back_populates="variants")
+
+    def __repr__(self):
+        return f"<EmailCampaignVariant {self.name} - {self.email_campaign_id}>"
 
 
 class EmailStats(Base):
