@@ -2,7 +2,9 @@
 Lead router
 """
 
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from datetime import datetime
@@ -10,6 +12,8 @@ from pydantic import BaseModel
 from loguru import logger
 
 from app.database import get_db
+from app.models.lead import Lead
+from app.utils.serializers import model_to_dict
 
 router = APIRouter()
 
@@ -33,21 +37,20 @@ async def create_lead(
     try:
         logger.info(f"Creating lead: {request.email}")
 
-        # In production, this would save to database
-        # For now, return a mock response
-        lead = {
-            "id": "mkt_lead_123",
-            "email": request.email,
-            "name": request.name,
-            "company": request.company,
-            "phone": request.phone,
-            "source": request.source,
-            "status": "new",
-            "created_at": datetime.utcnow().isoformat()
-        }
+        lead = Lead(
+            email=request.email,
+            name=request.name,
+            company=request.company,
+            phone=request.phone,
+            source=request.source,
+            source_details=request.source_details,
+        )
+        db.add(lead)
+        await db.commit()
+        await db.refresh(lead)
 
-        logger.info(f"Lead created: {lead['id']}")
-        return lead
+        logger.info(f"Lead created: {lead.id}")
+        return model_to_dict(lead)
 
     except Exception as e:
         logger.error(f"Failed to create lead: {e}")
@@ -84,19 +87,14 @@ async def get_lead(lead_id: str, db: AsyncSession = Depends(get_db)):
     try:
         logger.info(f"Getting lead details for {lead_id}")
 
-        # In production, this would query from database
-        # For now, return a mock response
-        lead = {
-            "id": lead_id,
-            "email": "lead@example.com",
-            "name": "Jordan Lee",
-            "status": "contacted",
-            "source": "funnel",
-            "created_at": datetime.utcnow().isoformat()
-        }
+        lead = await db.get(Lead, uuid.UUID(lead_id))
+        if lead is None:
+            raise HTTPException(status_code=404, detail=f"Lead not found: {lead_id}")
 
-        return lead
+        return model_to_dict(lead)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get lead: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -114,15 +112,21 @@ async def list_leads(
     try:
         logger.info("Listing leads")
 
-        # In production, this would query from database with filters
-        # For now, return a mock response
-        leads = [
-            {"id": "mkt_lead_001", "email": "lead1@example.com", "status": "new", "source": "funnel"},
-            {"id": "mkt_lead_002", "email": "lead2@example.com", "status": "qualified", "source": "social"},
-        ]
+        query = select(Lead)
+        if status is not None:
+            query = query.where(Lead.status == status)
+        if source is not None:
+            query = query.where(Lead.source == source)
+
+        count_result = await db.execute(select(func.count()).select_from(query.subquery()))
+        total = count_result.scalar_one()
+
+        query = query.order_by(Lead.created_at.desc()).limit(limit).offset(offset)
+        result = await db.execute(query)
+        leads = [model_to_dict(l) for l in result.scalars().all()]
 
         return {
-            "total": len(leads),
+            "total": total,
             "leads": leads,
             "filters": {"status": status, "source": source},
             "pagination": {"limit": limit, "offset": offset}

@@ -39,7 +39,7 @@ class Segment(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    campaigns = relationship("Campaign")
+    campaigns = relationship("Campaign", back_populates="segment")
     
     def __repr__(self):
         return f"<Segment {self.name} - {self.lead_count} leads>"

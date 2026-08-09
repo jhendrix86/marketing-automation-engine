@@ -70,7 +70,7 @@ class Campaign(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    segment = relationship("Segment")
+    segment = relationship("Segment", back_populates="campaigns")
     
     def __repr__(self):
         return f"<Campaign {self.name} - {self.status}>"

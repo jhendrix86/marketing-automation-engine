@@ -19,6 +19,9 @@ services:
       - TWITTER_ACCESS_SECRET=${TWITTER_ACCESS_SECRET}
       - LINKEDIN_API_KEY=${LINKEDIN_API_KEY}
       - LINKEDIN_API_SECRET=${LINKEDIN_API_SECRET}
+      - UNKEY_ROOT_KEY=${UNKEY_ROOT_KEY}
+      - UNKEY_API_ID=${UNKEY_API_ID}
+      - UNKEY_BASE_URL=${UNKEY_BASE_URL:-https://api.unkey.com/v2}
       - DEBUG=${DEBUG:-false}
       - FUNNEL_AUTOMATION_URL=http://funnel-automation-engine:8000
       - CONTENT_ENGINE_URL=http://content-engine:8040

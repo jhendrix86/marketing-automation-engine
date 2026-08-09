@@ -3,12 +3,14 @@ Marketing Automation Engine - Main Application
 Automated marketing campaign system for the Autonomous Company OS
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from loguru import logger
 from datetime import datetime
 import os
+
+from unkey_auth import require_api_key
 
 from app.config import settings
 from app.database import init_db
@@ -46,13 +48,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(campaigns.router, prefix="/campaigns", tags=["campaigns"])
-app.include_router(email.router, prefix="/email", tags=["email"])
-app.include_router(social.router, prefix="/social", tags=["social"])
-app.include_router(leads.router, prefix="/leads", tags=["leads"])
-app.include_router(segments.router, prefix="/segments", tags=["segments"])
-app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+# Include routers - gated by Unkey key verification (fails open until
+# UNKEY_ROOT_KEY is configured; see unkey-auth/README.md)
+_auth = [Depends(require_api_key)]
+app.include_router(campaigns.router, prefix="/campaigns", tags=["campaigns"], dependencies=_auth)
+app.include_router(email.router, prefix="/email", tags=["email"], dependencies=_auth)
+app.include_router(social.router, prefix="/social", tags=["social"], dependencies=_auth)
+app.include_router(leads.router, prefix="/leads", tags=["leads"], dependencies=_auth)
+app.include_router(segments.router, prefix="/segments", tags=["segments"], dependencies=_auth)
+app.include_router(analytics.router, prefix="/analytics", tags=["analytics"], dependencies=_auth)
 
 
 @app.get("/")

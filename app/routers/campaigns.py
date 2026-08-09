@@ -2,7 +2,9 @@
 Campaign router
 """
 
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from datetime import datetime, timedelta
@@ -11,6 +13,7 @@ from loguru import logger
 
 from app.database import get_db
 from app.models.campaign import Campaign, CampaignStatus, CampaignType
+from app.utils.serializers import model_to_dict
 
 router = APIRouter()
 
@@ -19,9 +22,9 @@ class CreateCampaignRequest(BaseModel):
     """Request to create campaign"""
     name: str
     description: Optional[str] = None
-    campaign_type: str
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+    campaign_type: CampaignType
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     segment_id: Optional[str] = None
     budget: Optional[int] = None
     target_leads: Optional[int] = None
@@ -36,27 +39,25 @@ async def create_campaign(
     """Create a marketing campaign"""
     try:
         logger.info(f"Creating campaign: {request.name}")
-        
-        # In production, this would save to database
-        # For now, return a mock response
-        campaign = {
-            "id": "camp_123",
-            "name": request.name,
-            "description": request.description,
-            "campaign_type": request.campaign_type,
-            "status": "draft",
-            "start_date": request.start_date,
-            "end_date": request.end_date,
-            "segment_id": request.segment_id,
-            "budget": request.budget,
-            "target_leads": request.target_leads,
-            "target_conversions": request.target_conversions,
-            "created_at": datetime.utcnow().isoformat()
-        }
-        
-        logger.info(f"Campaign created: {campaign['id']}")
-        return campaign
-        
+
+        campaign = Campaign(
+            name=request.name,
+            description=request.description,
+            campaign_type=request.campaign_type,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            segment_id=uuid.UUID(request.segment_id) if request.segment_id else None,
+            budget=request.budget,
+            target_leads=request.target_leads,
+            target_conversions=request.target_conversions,
+        )
+        db.add(campaign)
+        await db.commit()
+        await db.refresh(campaign)
+
+        logger.info(f"Campaign created: {campaign.id}")
+        return model_to_dict(campaign)
+
     except Exception as e:
         logger.error(f"Failed to create campaign: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -95,24 +96,15 @@ async def get_campaign(
     """Get campaign details"""
     try:
         logger.info(f"Getting campaign details for {campaign_id}")
-        
-        # In production, this would query from database
-        # For now, return a mock response
-        campaign = {
-            "id": campaign_id,
-            "name": "Welcome Series",
-            "description": "Email welcome campaign for new users",
-            "campaign_type": "email",
-            "status": "running",
-            "start_date": datetime.utcnow().isoformat(),
-            "target_leads": 1000,
-            "actual_leads": 450,
-            "target_conversions": 100,
-            "actual_conversions": 35
-        }
-        
-        return campaign
-        
+
+        campaign = await db.get(Campaign, uuid.UUID(campaign_id))
+        if campaign is None:
+            raise HTTPException(status_code=404, detail=f"Campaign not found: {campaign_id}")
+
+        return model_to_dict(campaign)
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get campaign: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -120,8 +112,8 @@ async def get_campaign(
 
 @router.get("/")
 async def list_campaigns(
-    status: Optional[str] = None,
-    campaign_type: Optional[str] = None,
+    status: Optional[CampaignStatus] = None,
+    campaign_type: Optional[CampaignType] = None,
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db)
@@ -129,28 +121,22 @@ async def list_campaigns(
     """List campaigns"""
     try:
         logger.info("Listing campaigns")
-        
-        # In production, this would query from database with filters
-        # For now, return a mock response
-        campaigns = [
-            {
-                "id": "camp_001",
-                "name": "Welcome Series",
-                "campaign_type": "email",
-                "status": "running",
-                "created_at": datetime.utcnow().isoformat()
-            },
-            {
-                "id": "camp_002",
-                "name": "Product Launch",
-                "campaign_type": "multi_channel",
-                "status": "scheduled",
-                "created_at": (datetime.utcnow() - timedelta(days=7)).isoformat()
-            }
-        ]
-        
+
+        query = select(Campaign)
+        if status is not None:
+            query = query.where(Campaign.status == status)
+        if campaign_type is not None:
+            query = query.where(Campaign.campaign_type == campaign_type)
+
+        count_result = await db.execute(select(func.count()).select_from(query.subquery()))
+        total = count_result.scalar_one()
+
+        query = query.order_by(Campaign.created_at.desc()).limit(limit).offset(offset)
+        result = await db.execute(query)
+        campaigns = [model_to_dict(c) for c in result.scalars().all()]
+
         return {
-            "total": len(campaigns),
+            "total": total,
             "campaigns": campaigns,
             "filters": {
                 "status": status,
@@ -161,7 +147,7 @@ async def list_campaigns(
                 "offset": offset
             }
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to list campaigns: {e}")
         raise HTTPException(status_code=500, detail=str(e))
