@@ -10,6 +10,7 @@ import uuid
 import enum
 
 from app.database import Base
+from app.models.tenant_base import TenantBase
 
 
 class SocialPlatform(str, enum.Enum):
@@ -21,7 +22,7 @@ class SocialPlatform(str, enum.Enum):
     TIKTOK = "tiktok"
 
 
-class SocialPost(Base):
+class SocialPost(TenantBase, Base):
     """Social post model"""
     __tablename__ = "social_posts"
     

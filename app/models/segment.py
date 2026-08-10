@@ -9,9 +9,10 @@ from datetime import datetime
 import uuid
 
 from app.database import Base
+from app.models.tenant_base import TenantBase
 
 
-class Segment(Base):
+class Segment(TenantBase, Base):
     """Segment model"""
     __tablename__ = "segments"
     

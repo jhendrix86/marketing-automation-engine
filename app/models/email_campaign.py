@@ -9,9 +9,10 @@ from datetime import datetime
 import uuid
 
 from app.database import Base
+from app.models.tenant_base import TenantBase
 
 
-class EmailCampaign(Base):
+class EmailCampaign(TenantBase, Base):
     """Email campaign model"""
     __tablename__ = "email_campaigns"
     
@@ -51,7 +52,7 @@ class EmailCampaign(Base):
         return f"<EmailCampaign {self.id} - {self.subject}>"
 
 
-class EmailCampaignVariant(Base):
+class EmailCampaignVariant(TenantBase, Base):
     """
     A/B test variant for an email campaign. When an EmailCampaign has 2+
     variants, recipients are deterministically split between them
@@ -80,7 +81,7 @@ class EmailCampaignVariant(Base):
         return f"<EmailCampaignVariant {self.name} - {self.email_campaign_id}>"
 
 
-class EmailStats(Base):
+class EmailStats(TenantBase, Base):
     """Email statistics model"""
     __tablename__ = "email_stats"
     

@@ -10,6 +10,7 @@ import uuid
 import enum
 
 from app.database import Base
+from app.models.tenant_base import TenantBase
 
 
 class CampaignStatus(str, enum.Enum):
@@ -31,7 +32,7 @@ class CampaignType(str, enum.Enum):
     NURTURE = "nurture"
 
 
-class Campaign(Base):
+class Campaign(TenantBase, Base):
     """Campaign model"""
     __tablename__ = "campaigns"
     

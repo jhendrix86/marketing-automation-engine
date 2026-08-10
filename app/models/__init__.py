@@ -2,6 +2,8 @@
 Database models for Marketing Automation Engine
 """
 
+from .tenant import Tenant
+from .tenant_base import TenantBase
 from .campaign import Campaign, CampaignStatus, CampaignType
 from .email_campaign import EmailCampaign, EmailStats
 from .social_post import SocialPost, SocialPlatform
@@ -9,6 +11,8 @@ from .lead import Lead, LeadScore
 from .segment import Segment
 
 __all__ = [
+    'Tenant',
+    'TenantBase',
     'Campaign',
     'CampaignStatus',
     'CampaignType',

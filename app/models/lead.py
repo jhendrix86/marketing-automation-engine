@@ -9,9 +9,10 @@ from datetime import datetime
 import uuid
 
 from app.database import Base
+from app.models.tenant_base import TenantBase
 
 
-class Lead(Base):
+class Lead(TenantBase, Base):
     """Lead model"""
     __tablename__ = "leads"
     
@@ -44,7 +45,7 @@ class Lead(Base):
         return f"<Lead {self.id} - {self.email} - {self.status}>"
 
 
-class LeadScore(Base):
+class LeadScore(TenantBase, Base):
     """Lead score model"""
     __tablename__ = "lead_scores"
     
