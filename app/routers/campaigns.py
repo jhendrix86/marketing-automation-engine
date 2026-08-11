@@ -13,6 +13,7 @@ from loguru import logger
 
 from app.database import get_db
 from app.models.campaign import Campaign, CampaignStatus, CampaignType
+from app.models.tenant_base import apply_tenant_context
 from app.utils.serializers import model_to_dict
 
 router = APIRouter()
@@ -51,6 +52,7 @@ async def create_campaign(
             target_leads=request.target_leads,
             target_conversions=request.target_conversions,
         )
+        apply_tenant_context(campaign)
         db.add(campaign)
         await db.commit()
         await db.refresh(campaign)

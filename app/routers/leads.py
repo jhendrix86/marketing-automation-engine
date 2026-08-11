@@ -13,6 +13,7 @@ from loguru import logger
 
 from app.database import get_db
 from app.models.lead import Lead
+from app.models.tenant_base import apply_tenant_context
 from app.utils.serializers import model_to_dict
 
 router = APIRouter()
@@ -45,6 +46,7 @@ async def create_lead(
             source=request.source,
             source_details=request.source_details,
         )
+        apply_tenant_context(lead)
         db.add(lead)
         await db.commit()
         await db.refresh(lead)

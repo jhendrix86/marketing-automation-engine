@@ -33,6 +33,7 @@ from app.database import get_db
 from app.models.campaign import Campaign
 from app.models.email_campaign import EmailCampaign, EmailCampaignVariant, EmailStats
 from app.models.lead import Lead
+from app.models.tenant_base import apply_tenant_context
 from app.services.esp.sendgrid_client import SendGridClient
 from app.utils.serializers import model_to_dict
 
@@ -98,6 +99,7 @@ async def create_email_campaign(
             is_drip=request.is_drip,
             drip_interval_days=request.drip_interval_days,
         )
+        apply_tenant_context(email_campaign)
         db.add(email_campaign)
 
         variants: List[EmailCampaignVariant] = []
@@ -115,6 +117,7 @@ async def create_email_campaign(
                     subject=v.subject,
                     html_content=v.html_content,
                 )
+                apply_tenant_context(variant)
                 db.add(variant)
                 variants.append(variant)
 
@@ -205,6 +208,7 @@ async def send_email_campaign(
             click_rate=0,
             bounce_rate=int(bounced / sent * 100) if sent else 0,
         )
+        apply_tenant_context(stats)
         db.add(stats)
         await db.commit()
 
