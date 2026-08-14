@@ -21,7 +21,6 @@ python-multipart==0.0.6
 
 # Social Media
 tweepy==4.14.0
-linkedin-api==0.1.7
 
 # HTTP
 httpx==0.25.1
