@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 # (verified empirically).
 COPY unkey-auth/ /app/unkey-auth/
 COPY ab-testing/ /app/ab-testing/
+COPY empire-operators/ /app/empire-operators/
 
 WORKDIR /app/marketing-automation-engine
 COPY marketing-automation-engine/requirements.txt .
