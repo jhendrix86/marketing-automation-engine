@@ -3,7 +3,7 @@ Lead models
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -16,7 +16,7 @@ class Lead(TenantBase, Base):
     """Lead model"""
     __tablename__ = "leads"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Contact information
     email = Column(String(255), nullable=False, index=True)
@@ -49,8 +49,8 @@ class LeadScore(TenantBase, Base):
     """Lead score model"""
     __tablename__ = "lead_scores"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lead_id = Column(UUID(as_uuid=True), ForeignKey("leads.id"), nullable=False)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lead_id = Column(Uuid(as_uuid=True), ForeignKey("leads.id"), nullable=False)
     
     # Score components
     demographic_score = Column(Integer, default=0)

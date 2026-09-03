@@ -3,7 +3,7 @@ Campaign models
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, Enum, ForeignKey, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -36,7 +36,7 @@ class Campaign(TenantBase, Base):
     """Campaign model"""
     __tablename__ = "campaigns"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Campaign details
     name = Column(String(255), nullable=False)
@@ -49,7 +49,7 @@ class Campaign(TenantBase, Base):
     end_date = Column(DateTime, nullable=True)
     
     # Targeting
-    segment_id = Column(UUID(as_uuid=True), ForeignKey("segments.id"), nullable=True)
+    segment_id = Column(Uuid(as_uuid=True), ForeignKey("segments.id"), nullable=True)
     
     # Budget
     budget = Column(Integer, nullable=True)

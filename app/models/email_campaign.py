@@ -3,7 +3,7 @@ Email campaign models
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -16,8 +16,8 @@ class EmailCampaign(TenantBase, Base):
     """Email campaign model"""
     __tablename__ = "email_campaigns"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id = Column(UUID(as_uuid=True), ForeignKey("campaigns.id"), nullable=False)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    campaign_id = Column(Uuid(as_uuid=True), ForeignKey("campaigns.id"), nullable=False)
     
     # Email details
     subject = Column(String(500), nullable=False)
@@ -61,8 +61,8 @@ class EmailCampaignVariant(TenantBase, Base):
     """
     __tablename__ = "email_campaign_variants"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email_campaign_id = Column(UUID(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email_campaign_id = Column(Uuid(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
 
     name = Column(String(50), nullable=False)  # e.g. "a", "b"
     subject = Column(String(500), nullable=False)
@@ -85,8 +85,8 @@ class EmailStats(TenantBase, Base):
     """Email statistics model"""
     __tablename__ = "email_stats"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email_campaign_id = Column(UUID(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email_campaign_id = Column(Uuid(as_uuid=True), ForeignKey("email_campaigns.id"), nullable=False)
     
     # Metrics
     sent = Column(Integer, default=0)

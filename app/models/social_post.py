@@ -3,7 +3,7 @@ Social post models
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, Enum, ForeignKey, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -26,8 +26,8 @@ class SocialPost(TenantBase, Base):
     """Social post model"""
     __tablename__ = "social_posts"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id = Column(UUID(as_uuid=True), ForeignKey("campaigns.id"), nullable=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    campaign_id = Column(Uuid(as_uuid=True), ForeignKey("campaigns.id"), nullable=True)
     
     # Post details
     platform = Column(Enum(SocialPlatform), nullable=False)
